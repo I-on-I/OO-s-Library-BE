@@ -1,67 +1,83 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default_layout}">
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
-<form id="reportForm" th:action="@{/comments/report}" method="post" onsubmit="submitForm(); return false;"> <!--onsubmit="window.onunload = window.opener.location.reload(); window.close();" -->
-    <input type="hidden" name="member_pk" th:value="${member_pk}"/>
-    <input type="hidden" name="comment_pk" th:value="${comment_pk}"/>
-    <div>
-        <p id="member_pk" th:text="${session.name}" readonly></p>
-    </div>
-    <div>
-        <label for="report_category">사유 선택</label>
-        <select name="report_category" id="report_category">
-            <option value="">----- 선택하세요 -----</option>
-            <option value="스팸">스팸/홍보</option>
-            <option value="불법정보">불법정보 포함</option>
-            <option value="유해">청소년에게 유해한 내용</option>
-            <option value="욕설">욕설/혐오/차별적 표현</option>
-            <option value="개인정보">개인정보 노출</option>
-        </select>
-    </div>
-    <div>
-        <label for="report_name">신고 제목</label>
-        <input type="text" id="report_name" name="report_name" placeholder="신고 제목을 입력하세요" required>
-    </div>
-    <div>
-        <label for="report_content">신고 내용</label>
-        <textarea id="report_content" name="report_content" cols="50" rows="5" placeholder="사유에 대해 자세히 알려주세요." required></textarea>
-    </div>
-    <button type="submit">신고하기</button>
-    <button type="reset" onclick="closeFrom()">취소</button>
-</form>
+<div layout:fragment="content">
+    <section class="py-5">
+        <div class="container px-5">
+            <div class="bg-light rounded-4 py-5 px-4 px-md-5">
+                <h2 style="text-align: center">코멘트 신고🚨</h2>
+                <div class="row gx-5 justify-content-center">
+                    <div class="col-lg-8 col-xl-6">
+                        <form id="reportForm" th:action="@{/comments/report}" method="post" onsubmit="submitForm(); return false;"> <!--onsubmit="window.onunload = window.opener.location.reload(); window.close();" -->
+                            <input type="hidden" name="member_pk" th:value="${member_pk}"/>
+                            <input type="hidden" name="comment_pk" th:value="${comment_pk}"/>
+                            <div class="bg-light p-4 rounded-4">
+                                <div>
+                                    <p id="member_pk" th:text="'신고자 : ' + ${session.name}" readonly></p>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <label for="report_category"></label>
+                                    <select name="report_category" id="report_category">
+                                        <option value="">----- 선택하세요 -----</option>
+                                        <option value="스팸">스팸/홍보</option>
+                                        <option value="불법정보">불법정보 포함</option>
+                                        <option value="유해">청소년에게 유해한 내용</option>
+                                        <option value="욕설">욕설/혐오/차별적 표현</option>
+                                        <option value="개인정보">개인정보 노출</option>
+                                    </select>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" type="text" id="report_name" name="report_name" placeholder="신고 제목을 입력하세요" required>
+                                    <label for="report_name">신고 제목</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control" style="height: 10rem" id="report_content" name="report_content" placeholder="사유에 대해 자세히 알려주세요." required></textarea>
+                                    <label for="report_content">신고 내용</label>
+                                </div>
+                                <div class="d-grid"><button class="btn btn-primary btn-lg" id="submitButton" type="submit">수정</button></div><br>
+                                <div class="d-grid"><button class="btn btn-primary btn-lg" onclick="closeFrom()" type="reset">취소</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<script>
-    function submitForm() {
-        var form = document.getElementById('reportForm');
-        var formData = new FormData(form);
+    <script>
+        function submitForm() {
+            var form = document.getElementById('reportForm');
+            var formData = new FormData(form);
 
-        // AJAX를 사용하여 폼 데이터를 서버에 비동기적으로 전송
-        fetch(form.action, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (response.ok) {
-                    // 현재 창 닫기
-                    window.close();
-                    // 부모 창 새로고침
-                    window.opener.location.reload();
-                    alert("신고가 완료되었습니다.");
-                } else {
-                    alert('신고에 실패했습니다.');
-                }
+            // AJAX를 사용하여 폼 데이터를 서버에 비동기적으로 전송
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
             })
-            .catch(error => console.error('Error:', error));
-    }
+                .then(response => {
+                    if (response.ok) {
+                        // 현재 창 닫기
+                        window.close();
+                        // 부모 창 새로고침
+                        window.opener.location.reload();
+                        alert("신고가 완료되었습니다.");
+                    } else {
+                        alert('신고에 실패했습니다.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-    function closeFrom() {
-        window.close();
-    }
-</script>
-
+        function closeFrom() {
+            window.close();
+        }
+    </script>
+</div>
 </body>
 </html>

@@ -4,6 +4,7 @@ import lombok.*;
 
 @Getter
 @Setter
+@ToString
 public class CommentRequestDTO { //등록, 수정
     private Long comment_pk;
     private Long member_pk;

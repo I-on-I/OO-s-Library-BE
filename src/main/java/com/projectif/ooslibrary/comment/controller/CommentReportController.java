@@ -1,7 +1,5 @@
 package com.projectif.ooslibrary.comment.controller;
 
-import com.projectif.ooslibrary.comment.domain.CommentReportVO;
-import com.projectif.ooslibrary.comment.domain.CommentVO;
 import com.projectif.ooslibrary.comment.dto.CommentReportRequestDTO;
 import com.projectif.ooslibrary.comment.service.CommentReportService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -31,9 +28,6 @@ public class CommentReportController {
     public String updateComment(@RequestParam("comment_pk") Long comment_pk,
                                 @RequestParam("member_pk") Long member_pk,
                                 Model model) {
-//        if (id != session.getAttribute("pk")) {
-//            throw new SessionMemberNotMatchException("접근이 허용되지 않는 정보입니다");
-//        }
         model.addAttribute("comment_pk", comment_pk);
         model.addAttribute("member_pk", member_pk);
         return "members/commentReport";
@@ -48,6 +42,7 @@ public class CommentReportController {
         else
             return ResponseEntity.badRequest().body("false");
     }
+
     //신고 삭제(코멘트 + 멤버아이디)
     @DeleteMapping("/report")
     public ResponseEntity<String> deleteReportComment(@RequestBody Map<String, Long> ReportRequest){

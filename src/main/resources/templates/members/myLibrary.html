@@ -15,6 +15,7 @@
 
     <h1>여기는 내서재임</h1>
     <a th:href="@{../calendar/{pk}(pk=${session.myLibraryPk})}">bookcalendar</a>
+    <div id="user" th:value="${session.pk}"></div>
     <div>
         <div th:each="book, bookStat : ${bookList}">
             <div>
@@ -26,6 +27,7 @@
                             data-index=${bookStat.index},
                             data-user=${session.pk},
                             data-name=${session.name}">
+
                     <img th:src="${book.coverImagePath}" alt="북커버">
                 </button>
                 <input type="hidden" th:text="${book.bookPk}">
@@ -44,38 +46,45 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Comment List</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <h1>Comment List (미치겠어요~)</h1>
                             <div th:id="'commentsContainer' + ${bookStat.index}"> <!-- 책들 마다 인덱스 부여 -->
                                 <!-- 코멘트가 표시되는 곳 -->
                             </div>
-                            <button id="searchMoreNotify">더보기</button>
+                                <button id="searchMoreNotify" class="btn btn-outline-primary btn-block col-sm-10 mx-auto" style="width: 465px">더보기</button><br>
                             <!-- 코멘트 작성 폼-->
-                            <form id="commentForm" th:action="@{/comments/insert}" method="post" onsubmit="submitForm();">
-                                <input type="hidden" th:name="book_pk" th:value="${book.bookPk}">
-                                <input type="hidden" th:name="member_pk" th:value="${session.pk}">
-                                <!--<div>
-                                    <p type="text" id="member_pk" name="member_pk" th:value="${session.pk}" th:text="${session.name}" required>
-                                </div>-->
-                                <div>
-                                    <label for="comment_title">제목</label>
-                                    <input type="text" id="comment_title" name="comment_title" placeholder="제목을 입력하시오" required>
-                                    <div class="error-message" id="titleError"></div>
+                            <br>
+                            <div class="card shadow border-0 rounded-4 mb-5">
+                                <div class="card-body p-5">
+                                    <h4 style="text-align: left">코멘트 작성📃</h4>
+                                    <div class="mb-5">
+                                        <div class="d-flex align-items-center mb-4">
+                                            <form id="commentForm" th:action="@{/comments/insert}" method="post" onsubmit="submitForm(event);">
+                                                <input type="hidden" th:name="book_pk" th:value="${book.bookPk}">
+                                                <input type="hidden" th:name="member_pk" th:value="${session.pk}">
+                                                <!--<div>
+                                                    <p type="text" id="member_pk" name="member_pk" th:value="${session.pk}" th:text="${session.name}" required>
+                                                </div>-->
+                                                <div class="form-floating mb-3">
+                                                    <input class="form-control" id="comment_title" name="comment_title" type="text" placeholder="제목을 입력하시오" required />
+                                                    <label for="comment_title">제목</label>
+                                                </div>
+                                                <div class="form-floating mb-3">
+                                                    <textarea class="form-control" id="comment_content" name="comment_content" style="height: 10rem" cols="50" rows="5" placeholder="내용을 입력하시오" required></textarea>
+                                                    <label for="comment_content">내용</label>
+                                                </div>
+                                                <button type="submit" class="btn btn-outline-primary" id="submitCommentBtn" >등록</button>
+                                                <button type="reset" class="btn btn-outline-secondary" >취소</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label for="comment_content">내용</label>
-                                    <textarea id="comment_content" name="comment_content" cols="50" rows="5" placeholder="내용을 입력하시오" required></textarea>
-                                    <div class="error-message" id="contentError"></div>
-                                </div>
-                                <button type="submit" id="submitCommentBtn" >등록</button>
-                                <button type="reset" class="btn btn-secondary" >취소</button>
-                            </form>
+                            </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" style="background-color: dodgerblue; color: white; border: dodgerblue" data-bs-dismiss="modal">Close</button>
                             <!--<button type="button" class="btn btn-primary">Save changes</button>-->
                         </div>
                     </div>
@@ -87,23 +96,30 @@
 
     <script>
 
+        //url에서 my_library_pk 값 가져오기
+        var url = window.location.href;
+        const lastSegment = url.split('/').pop();
+
         //document.getElementById('commentForm').addEventListener('submit', function(e) {
-        function submitForm() {
+        function submitForm(e) {
+            console.log(e);
             e.preventDefault(); // 기본 폼 제출 동작을 방지
+
             var form = document.getElementById('commentForm');
             var formData = new FormData(form); // 폼 데이터 수집
-            var my_library_pk = lastSegment;
+            formData.append('my_library_pk', lastSegment);
+            console.log(formData);
+            console.log(form);
 
-            fetch(this.action, {
+            fetch(form.action, {
                 method: 'POST',
-                body: formData,
-                my_library_pk : my_library_pk
+                body: formData
             })
                 .then(response => {
                     if(response.ok) {
                         // 성공적으로 데이터가 처리되었을 때 페이지 새로고침
-                        window.location.reload();
                         alert("코멘트가 등록되었습니다.");
+                        window.location.reload();
                     } else {
                         // 서버에서 오류 응답이 올 경우 처리
                         alert('코멘트 등록이 불가합니다. 다시 시도해주세요');
@@ -111,33 +127,31 @@
                 })
                 .catch(error => console.error('Error:', error));
 
+            //저장 후 리셋
             document.getElementById("commentForm").reset();
         }
 
-        //url에서 my_library_pk 값 가져오기
-        var url = window.location.href;
-        const lastSegment = url.split('/').pop();
-        //console.log(lastSegment);
-
+        //코멘트 리스트 + 페이징 처리
         $(document).ready(function() {
             $('.open-modal').click(function () {
                 // 페이지 번호 초기화
                 window.pageNum = 1;
 
-                // commentsContainer 변수를 여기에서 초기화
-                var commentsContainer = $('#commentsContainer');
-
-                // commentsContainer 내용 초기화
-                commentsContainer.empty();
-
                 // 필요한 데이터 로드
-                var pageSize = 2;     //2개씩 로딩
+                var pageSize = 3;     //3개씩 로딩
                 var user = $(this).data('user');
                 var name = $(this).data('name');
-                console.log(name);
                 var bookPk = $(this).data('book-pk');
                 var myLibraryPk = lastSegment;
                 var index = $(this).data('index'); // 인덱스
+                console.log(user);
+
+                // commentsContainer 변수를 여기에서 초기화
+                var commentsContainer = $('#commentsContainer' + index);
+                console.log(commentsContainer);
+
+                // commentsContainer 내용 초기화
+                //commentsContainer.empty();
 
                 // 댓글 로드 함수 호출
                 loadComments(window.pageNum);
@@ -149,9 +163,6 @@
                 });
 
                 function loadComments(pageNum) {
-                    console.log(bookPk);
-                    console.log(myLibraryPk);
-                    console.log(window.pageNum);
                     $.ajax({
                         url: '/comments/list',
                         type: 'POST',
@@ -167,41 +178,48 @@
                             const commentsContainer = document.getElementById('commentsContainer' + index);
                             data.forEach(function(comment) {
                                 var commentHtml = `<div class="card shadow border-0 rounded-4 mb-5">
-                                                         <div class="card-body p-5">
-                                                              <div class="row align-items-center gx-5">
-                                                                  <div class="col text-center text-lg-start mb-4 mb-lg-0">
-                                                                    <div class="bg-light p-4 rounded-4">
-                                                                        <div class="text-primary fw-bolder mb-2">
-                                                                            작성 일자: ${comment.created_date} <br>
-                                                                            ${comment.modified_date ? `수정 일자: ${comment.modified_date} <br>` : ''}
-                                                                        </div>
-                                                                        <div class="small text-muted">작성자: ${name}
-                                                                        <button class="fas fa-heart" data-liked="false" onclick="likeComment(this, ${comment.comment_pk}, ${comment.member_pk})"></button> ${comment.total_like} &nbsp;&nbsp;
-                                                                        <button class="fas fa-flag" onclick="reportComment(${comment.comment_pk}, ${comment.member_pk})"></button><br>
-                                                                        </div>
-                                                                        <div class="small fw-bolder">제목: ${comment.comment_title}</div>
-                                                                    </div>
-                                                                  </div>
-                                                                <div class="col-lg-8"><div>내용: ${comment.comment_content}</div></div>
-                                                              </div>
-                                                         </div>
-                                                   </div>`;
+                                                      <div class="col text-center text-lg-start mb-4 mb-lg-0">
+                                                          <div class="bg-light p-4 rounded-4">
+                                                             <div class="text-primary fw-bolder mb-2 btn-sm">
+                                                             <div style="text-align: right">
+                                                                     <button style="background: none; border: none; cursor: pointer; outline: none; padding: 0; text-align: right;" class="fas fa-heart"
+                                                                     data-liked="false" onclick="likeComment(this ,${comment.comment_pk}, ${comment.member_pk})"></button>&nbsp;&nbsp;
+                                                                     <button style="background: none; border: none; cursor: pointer; outline: none; padding: 0; text-align: right;" class="fas fa-flag"
+                                                                     onclick="reportComment(${comment.comment_pk}, ${comment.member_pk})"></button><br>
+                                                                 </div>
+                                                                 <div style="display: flex; align-items: center;">
+                                                                     <img class="img-fluid" src="https://ssl.pstatic.net/static/pwe/address/img_profile.png" width="40" height="40" style="margin-right: 10px;">
+                                                                     <p style="color: black; font-size: large; margin: 0;">${name}</p>
+                                                                     </div><br>
+                                                                 <div class="small text-muted" style="text-align: right">
+                                                                      ${comment.created_date} <br>
+                                                                      ${comment.modified_date ? `수정 일자 : <br>${comment.modified_date} <br>` : ''}
+                                                                 </div><br>
+                                                                 <div>
+                                                                      <div style="text-align: left; font-size: x-large; font-weight: bold; color: black">${comment.comment_title}</div>
+                                                                      <div style="text-align: left; margin-left: 20px; color: black">${comment.comment_content}</div>
+                                                                 </div><br><br><br>`;
                                 // 사용자 ID와 댓글 작성자 ID가 같을 경우에만 수정 및 삭제 버튼 추가
                                 if (user === comment.member_pk) {
-                                    commentHtml += `<form>
-                                                    <input type="button" class="btn btn-primary" value="수정" onclick="openEditModal(${comment.comment_pk})">
-                                                    <input type="button" class="btn btn-secondary" value="삭제" onclick="isDelete(${comment.comment_pk})">
-                                                </form>`;
+                                    commentHtml += `<div style="text-align: right;">
+                                                        <input type="button" class="btn btn-primary btn-sm" value="수정" onclick="openEditModal(${comment.comment_pk})">
+                                                        <input type="button" class="btn btn-secondary btn-sm" value="삭제" onclick="isDelete(${comment.comment_pk})">
+                                                    </div>`;
                                 }
+                                    commentHtml += `</div> <!-- 여기는 내용 div의 닫는 태그 -->
+                                                  </div>
+                                                </div>
+                                              </div>`;
+
                                 // commentsContainer에 댓글 요소 추가
                                 $(commentsContainer).append(commentHtml);
 
                             });
                             // 더보기 버튼 보이기/숨기기 처리
                             if(data.length < pageSize) {
-                                $('#searchMoreNotify').hide();
+                                $('#searchMoreNotify[data-index="' + index + '"]').hide();
                             }else {
-                                $('#searchMoreNotify').show(); // 더 불러올 데이터가 있을 경우 "더보기" 버튼을 다시 보이게 합니다.
+                                $('#searchMoreNotify[data-index="' + index + '"]').show(); // 더 불러올 데이터가 있을 경우 "더보기" 버튼을 다시 보이게 합니다.
                             }
                         },
                         error: function (err) {
@@ -263,7 +281,6 @@
         }
 
         //좋아요
-        //좋아요
         function likeComment(button, comment_pk, member_pk) {
             const isLiked = button.getAttribute('data-liked') === 'true';
 
@@ -282,8 +299,7 @@
                 cancelLike(comment_pk, member_pk);
             }
         }
-
-
+        //좋아요 추가
         function registerLike(comment_pk, member_pk) {
             // AJAX 요청을 통해 서버에 좋아요 등록을 요청합니다.
             fetch(`/comments/likes/${comment_pk}/${member_pk}`, {
@@ -297,7 +313,7 @@
                 console.error('Error:', error);
             });
         }
-
+        //좋아요 취소
         function cancelLike(comment_pk, member_pk) {
             // AJAX 요청을 통해 서버에 좋아요 취소를 요청합니다.
             fetch(`/comments/likes/${comment_pk}/${member_pk}`, {
@@ -324,8 +340,8 @@
 
             //미니창 오픈
             window.open(url, "Comment Edit", "width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
-
         }
+
 
     </script>
 

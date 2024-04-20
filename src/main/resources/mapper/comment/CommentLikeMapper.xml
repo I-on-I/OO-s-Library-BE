@@ -25,9 +25,4 @@
     <update id="remove_total_like" parameterType="long">
         update comment set total_like = total_like - 1 where comment_pk=#{comment_pk}
     </update>
-
-    <!-- 코멘트 별 좋아요 리스트 출력 -->
-    <select id="listLikeComment" parameterType="long" resultType="com.projectif.ooslibrary.comment.domain.CommentLikeVO">
-        select * from comment_like where comment_pk = #{comment_pk}
-    </select>
 </mapper>
